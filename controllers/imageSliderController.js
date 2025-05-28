@@ -41,7 +41,7 @@ export const createSlider = async (req, res) => {
         .json({ success: false, message: "Main image is required" });
     }
 
-    const uploaded = await uploadImages(req, "mainImg");
+    const uploaded = await uploadImages(req);
     if (!uploaded.success) {
       return res
         .status(500)

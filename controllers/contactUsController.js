@@ -1,4 +1,3 @@
-import dbConnect from "../validations/index.js";
 import ContactUs from "../models/ContactUs.js";
 
 // Helper function to validate required fields
@@ -8,7 +7,6 @@ const validateContactFields = ({ name, email, contactNo, message }) => {
 
 export const createContactMessage = async (req, res) => {
   try {
-    await dbConnect();
     const { name, email, contactNo, message } = req.body;
 
     if (!validateContactFields({ name, email, contactNo, message })) {
@@ -30,7 +28,6 @@ export const createContactMessage = async (req, res) => {
 
 export const getContactMessages = async (req, res) => {
   try {
-    await dbConnect();
     const data = await ContactUs.find().sort({ createdAt: -1 }).lean();
     return res.status(200).json({ success: true, data });
   } catch (error) {

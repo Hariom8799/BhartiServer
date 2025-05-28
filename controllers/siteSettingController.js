@@ -1,14 +1,5 @@
 import SiteSetting from "../models/SiteSetting.js";
 import { uploadImages } from "../utils/ImageUpload.js";
-import { IncomingForm } from "formidable";
-import fs from "fs";
-import path from "path";
-
-const uploadTempDir = path.join(process.cwd(), "tmp_uploads");
-if (!fs.existsSync(uploadTempDir))
-  fs.mkdirSync(uploadTempDir, { recursive: true });
-
-const getField = (field) => (Array.isArray(field) ? field[0] : field);
 
 export const getSiteSetting = async (req, res) => {
   try {
@@ -22,34 +13,38 @@ export const getSiteSetting = async (req, res) => {
 };
 
 export const updateSiteSetting = async (req, res) => {
-  const form = new IncomingForm({
-    uploadDir: uploadTempDir,
-    keepExtensions: true,
-    maxFileSize: 5 * 1024 * 1024,
-  });
-
   try {
-    const [fields, files] = await new Promise((resolve, reject) => {
-      form.parse(req, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve([fields, files]);
-      });
-    });
+    const {
+      siteTitle,
+      about,
+      email,
+      contactNo,
+      facebook,
+      instagram,
+      twitter,
+      linkedin,
+    } = req.body;
 
     const data = {
-      siteTitle: getField(fields.siteTitle),
-      about: getField(fields.about),
-      email: getField(fields.email),
-      contactNo: getField(fields.contactNo),
-      facebook: getField(fields.facebook),
-      instagram: getField(fields.instagram),
-      twitter: getField(fields.twitter),
-      linkedin: getField(fields.linkedin),
+      siteTitle,
+      about,
+      email,
+      contactNo,
+      facebook,
+      instagram,
+      twitter,
+      linkedin,
     };
 
-    if (files.logo) {
-      const uploadResult = await uploadImages([files.logo.filepath]);
-      data.logo = uploadResult[0].secure_url;
+    let logoUrl;
+
+    if (req.files && req.files.length > 0) {
+      const urls = await uploadImages(req);
+      if (urls.images.length > 0) logoUrl = urls.images[0];
+    }
+
+    if (logoUrl) {
+      data.logo = logoUrl;
     }
 
     let siteSetting = await SiteSetting.findOne();
@@ -62,6 +57,9 @@ export const updateSiteSetting = async (req, res) => {
     await siteSetting.save();
     res.status(200).json({ success: true, data: siteSetting });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error("Error updating site setting:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
   }
 };

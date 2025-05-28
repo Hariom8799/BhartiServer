@@ -15,6 +15,25 @@ export const getDepartmentJobs = async (req, res) => {
     const jobs = await DepartmentJob.find(filter).sort({ createdAt: -1 });
     return res.status(200).json({ success: true, jobs });
   } catch (error) {
+    console.log("Error fetching department jobs:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+export const getDepartmentJobsPublic = async (req, res) => {
+  try {
+    const { departmentType, departmentId } = req.query;
+    const filter = { };
+
+    if (departmentType) filter.departmentType = departmentType;
+    if (departmentId && mongoose.Types.ObjectId.isValid(departmentId)) {
+      filter.departmentId = departmentId;
+    }
+
+    const jobs = await DepartmentJob.find(filter).sort({ createdAt: -1 });
+    return res.status(200).json({ success: true, jobs });
+  } catch (error) {
+    console.log("Error fetching department jobs:", error);
     return res.status(500).json({ success: false, error: error.message });
   }
 };
