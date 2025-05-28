@@ -13,7 +13,7 @@ import { requireAuth } from "../middlewares/auth.js";
 const router = express.Router();
 const upload = multer({ dest: "uploads/" }); // temp local storage for multer
 
-router.get("/",requireAuth, requireAuth,getDepartmentJobs);
+router.get("/",requireAuth, getDepartmentJobs);
 router.get("/:id",requireAuth, getDepartmentJobById);
 router.post("/", requireAuth, upload.array("jobDescriptionFile"), createDepartmentJob);
 router.put("/:id",requireAuth, upload.array("jobDescriptionFile"), updateDepartmentJob);
