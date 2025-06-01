@@ -38,6 +38,20 @@ export const getDepartmentJobsPublic = async (req, res) => {
   }
 };
 
+export const getAllDepartmentJobs = async (req, res) => {
+  try {
+    const jobs = await DepartmentJob.find()
+      .sort({ createdAt: -1 })
+      .populate("createdBy")
+      .populate("departmentId");
+    
+    return res.status(200).json({ success: true, jobs });
+  } catch (error) {
+    console.log("Error fetching all department jobs:", error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+}
+
 export const getDepartmentJobById = async (req, res) => {
   try {
     const job = await DepartmentJob.findById(req.params.id);

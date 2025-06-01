@@ -16,38 +16,36 @@ export const updateSiteSetting = async (req, res) => {
   try {
     const {
       siteTitle,
-      about,
       email,
       contactNo,
       facebook,
       instagram,
       twitter,
       linkedin,
+      iframe,
     } = req.body;
 
     const data = {
       siteTitle,
-      about,
       email,
       contactNo,
       facebook,
       instagram,
       twitter,
       linkedin,
+      iframe,
     };
 
-    let logoUrl;
-
+    // Handle logo upload if present
     if (req.files && req.files.length > 0) {
       const urls = await uploadImages(req);
-      if (urls.images.length > 0) logoUrl = urls.images[0];
-    }
-
-    if (logoUrl) {
-      data.logo = logoUrl;
+      if (urls.images.length > 0) {
+        data.logo = urls.images[0]; // Assuming only one logo image is uploaded
+      }
     }
 
     let siteSetting = await SiteSetting.findOne();
+
     if (siteSetting) {
       Object.assign(siteSetting, data);
     } else {

@@ -37,9 +37,6 @@ export const deleteImage = async (imageUrl) => {
     if (!imageUrl) {
       throw new Error("No image URL provided");
     }
-
-    // Extract public_id from Cloudinary URL
-    // URL format: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/public_id.ext
     const urlParts = imageUrl.split("/");
     const fileNameWithExtension = urlParts[urlParts.length - 1];
     const publicId = fileNameWithExtension.split(".")[0];

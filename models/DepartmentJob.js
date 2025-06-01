@@ -11,12 +11,12 @@ const departmentJobSchema = new mongoose.Schema(
     dateOfAdvertisement: { type: Date, required: true },
     departmentType: {
       type: String,
-      enum: ["Govt", "Aided", "Public"],
+      enum: ["GovtDept", "AidedDept", "PublicUndertaking"],
       required: true,
     },
     departmentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Department",
+      refPath: "departmentType",
       required: true,
     },
     createdBy: {

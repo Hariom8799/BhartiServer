@@ -22,7 +22,7 @@ import aboutUsRoutes from "./route/aboutUsRoutes.js";
 import siteSettingRoutes from "./route/siteSettingRoutes.js";
 import jobCountRoutes from "./route/jobCountRoutes.js";
 import userRoutes from "./route/userRoutes.js";
-
+import generalRoutes from './route/generalRoutes.js';
 
 const app = express();
 app.use(cors());
@@ -57,6 +57,7 @@ app.get("/", (request, response) => {
 // app.use("/api/blog",blogRouter)
 // app.use("/api/order",orderRouter)
 // app.use("/api/logo",logoRouter)
+app.use("/api", generalRoutes);
 app.use("/api/department-jobs", departmentJobRoutes);
 app.use("/api/image-sliders", imageSliderRoutes);
 app.use("/api/recent-job-news", recentJobNewsRoutes);

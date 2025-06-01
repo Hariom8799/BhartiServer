@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const SiteSettingSchema = new mongoose.Schema(
   {
     siteTitle: { type: String, required: true },
-    about: { type: String, required: true },
     email: { type: String, required: true },
     contactNo: { type: String, required: true },
     logo: { type: String }, // path to uploaded logo
@@ -11,6 +10,7 @@ const SiteSettingSchema = new mongoose.Schema(
     instagram: { type: String },
     twitter: { type: String },
     linkedin: { type: String },
+    iframe: { type: String }, 
   },
   { timestamps: true }
 );

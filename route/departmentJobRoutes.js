@@ -7,6 +7,7 @@ import {
   updateDepartmentJob,
   deleteDepartmentJob,
   getDepartmentJobsPublic,
+  getAllDepartmentJobs,
 } from "../controllers/departmentJobController.js";
 import multer from "multer";
 import { requireAuth } from "../middlewares/auth.js";
@@ -16,6 +17,7 @@ const upload = multer({ dest: "uploads/" });
 
 router.get("/",requireAuth, getDepartmentJobs);
 router.get("/getAllJobs", getDepartmentJobsPublic); 
+router.get("/all", getAllDepartmentJobs);
 router.get("/:id",requireAuth, getDepartmentJobById);
 router.post("/", requireAuth, upload.single("jobDescriptionFile"), createDepartmentJob);
 router.put(
