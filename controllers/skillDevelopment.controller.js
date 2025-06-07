@@ -1,45 +1,44 @@
-import SkillDevelopmentModel from "../models/SkillDevelopmentProgram.js";
 import mongoose from "mongoose";
-import  recentJobSchema from "../validations/index.js";
-import { uploadImages } from "../utils/ImageUpload.js";
+import SkillDevelopmentModel from "../models/SkillDevelopmentProgram.js";
+import { uploadImages, deleteImage } from "../utils/ImageUpload.js";
+import recentJobSchema from "../validations/index.js";
 
+// Get all skill development entries
 export const getAllSkillDevelopments = async (req, res) => {
   try {
     const jobs = await SkillDevelopmentModel.find().sort({ createdAt: -1 });
     res.status(200).json({
       success: true,
-      message: "Job news fetched successfully",
+      message: "Skill development data fetched successfully",
       data: jobs,
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching jobs",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching data",
+      error: error.message,
+    });
   }
 };
 
+// Get a specific skill development entry by ID
 export const getSkillDevelopmentById = async (req, res) => {
   try {
     const job = await SkillDevelopmentModel.findById(req.params.id);
     if (!job)
-      return res.status(404).json({ success: false, message: "Job not found" });
+      return res.status(404).json({ success: false, message: "Not found" });
 
-    res.status(200).json({ success: true, message: "Job fetched", data: job });
+    res.status(200).json({ success: true, message: "Fetched", data: job });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching job",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching data",
+      error: error.message,
+    });
   }
 };
 
+// Create new skill development entry
 export const createSkillDevelopment = async (req, res) => {
   try {
     const {
@@ -52,18 +51,39 @@ export const createSkillDevelopment = async (req, res) => {
 
     let thumbnailUrl;
     let mainImgUrl;
+    let jobDescriptionFile = null;
 
-    if (req.files && req.files.length > 0) {
-      const urls = await uploadImages(req);
+    const allFiles = [
+      ...(req.files?.images || []),
+      ...(req.files?.jobDescriptionFile || []),
+    ];
 
-      if (urls.images.length >= 1) thumbnailUrl = urls.images[0];
-      if (urls.images.length >= 2) mainImgUrl = urls.images[1];
+    if (allFiles.length > 0) {
+      const uploaded = await uploadImages({ files: allFiles });
+
+      if (!uploaded.success) {
+        return res.status(500).json({
+          success: false,
+          message: "File upload failed",
+          error: uploaded.error,
+        });
+      }
+
+      const imageFiles = req.files?.images || [];
+      if (imageFiles.length >= 1) thumbnailUrl = uploaded.images[0];
+      if (imageFiles.length >= 2) mainImgUrl = uploaded.images[1];
+
+      if (req.files?.jobDescriptionFile?.length) {
+        const docIndex = imageFiles.length;
+        jobDescriptionFile = uploaded.images[docIndex];
+      }
     }
 
     if (!thumbnailUrl || !mainImgUrl) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Images are required" });
+      return res.status(400).json({
+        success: false,
+        message: "Images are required",
+      });
     }
 
     const dataToValidate = {
@@ -74,6 +94,8 @@ export const createSkillDevelopment = async (req, res) => {
       thumbnail: thumbnailUrl,
       mainImg: mainImgUrl,
     };
+
+    if (jobDescriptionFile) dataToValidate.document = jobDescriptionFile;
 
     if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
       dataToValidate.createdBy = createdBy;
@@ -89,18 +111,21 @@ export const createSkillDevelopment = async (req, res) => {
     }
 
     const newJob = await SkillDevelopmentModel.create(parsed.data);
-    res
-      .status(201)
-      .json({ success: true, message: "Created successfully", data: newJob });
+    res.status(201).json({
+      success: true,
+      message: "Created successfully",
+      data: newJob,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error creating job",
+      message: "Creation failed",
       error: error.message,
     });
   }
 };
 
+// Update skill development entry
 export const updateSkillDevelopment = async (req, res) => {
   try {
     const { id } = req.params;
@@ -112,15 +137,37 @@ export const updateSkillDevelopment = async (req, res) => {
       createdBy,
       existingThumbnail,
       existingMainImg,
+      existingJobDescriptionFile,
     } = req.body;
 
-    let thumbnailUrl = existingThumbnail;
-    let mainImgUrl = existingMainImg;
+    let thumbnailUrl = existingThumbnail || null;
+    let mainImgUrl = existingMainImg || null;
+    let jobDescriptionFile = existingJobDescriptionFile || null;
 
-    if (req.files && req.files.length > 0) {
-      const urls = await uploadImages(req);
-      if (urls.images.length >= 1) thumbnailUrl = urls.images[0];
-      if (urls.images.length >= 2) mainImgUrl = urls.images[1];
+    const allFiles = [
+      ...(req.files?.images || []),
+      ...(req.files?.jobDescriptionFile || []),
+    ];
+
+    if (allFiles.length > 0) {
+      const uploaded = await uploadImages({ files: allFiles });
+
+      if (!uploaded.success) {
+        return res.status(500).json({
+          success: false,
+          message: "File upload failed",
+          error: uploaded.error,
+        });
+      }
+
+      const imageFiles = req.files?.images || [];
+      if (imageFiles.length >= 1) thumbnailUrl = uploaded.images[0];
+      if (imageFiles.length >= 2) mainImgUrl = uploaded.images[1];
+
+      if (req.files?.jobDescriptionFile?.length) {
+        const docIndex = imageFiles.length;
+        jobDescriptionFile = uploaded.images[docIndex];
+      }
     }
 
     const dataToValidate = {};
@@ -131,6 +178,8 @@ export const updateSkillDevelopment = async (req, res) => {
     if (status) dataToValidate.status = status;
     if (thumbnailUrl) dataToValidate.thumbnail = thumbnailUrl;
     if (mainImgUrl) dataToValidate.mainImg = mainImgUrl;
+    if (jobDescriptionFile) dataToValidate.document = jobDescriptionFile;
+
     if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
       dataToValidate.createdBy = createdBy;
     }
@@ -164,30 +213,38 @@ export const updateSkillDevelopment = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Error updating job",
+      message: "Update failed",
       error: error.message,
     });
   }
 };
 
+// Delete skill development entry
 export const deleteSkillDevelopment = async (req, res) => {
   try {
     const deletedJob = await SkillDevelopmentModel.findByIdAndDelete(
       req.params.id
     );
-    if (!deletedJob)
-      return res.status(404).json({ success: false, message: "Job not found" });
 
-    res
-      .status(200)
-      .json({ success: true, message: "Job deleted", data: deletedJob });
+    if (!deletedJob)
+      return res.status(404).json({ success: false, message: "Not found" });
+
+    const { thumbnail, mainImg, document } = deletedJob;
+
+    await deleteImage(thumbnail);
+    await deleteImage(mainImg);
+    await deleteImage(document);
+
+    res.status(200).json({
+      success: true,
+      message: "Deleted successfully",
+      data: deletedJob,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error deleting job",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Delete failed",
+      error: error.message,
+    });
   }
 };

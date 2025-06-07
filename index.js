@@ -23,6 +23,7 @@ import siteSettingRoutes from "./route/siteSettingRoutes.js";
 import jobCountRoutes from "./route/jobCountRoutes.js";
 import userRoutes from "./route/userRoutes.js";
 import generalRoutes from './route/generalRoutes.js';
+import socialGalleryRoutes from './route/socialGalleryRoutes.js'
 
 const app = express();
 app.use(cors());
@@ -73,6 +74,7 @@ app.use("/api/departments", departmentRoutes);
 app.use("/api/about-us", aboutUsRoutes)
 app.use("/api/site-setting", siteSettingRoutes);
 app.use("/api/get-job-counts", jobCountRoutes);
+app.use("/api/socialImages", socialGalleryRoutes);
 app.use("/api/user", userRoutes);
 
 

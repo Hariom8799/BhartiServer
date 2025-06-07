@@ -13,8 +13,22 @@ const upload = multer({ dest: "uploads/" });
 
 router.get("/", getAllSkillDevelopments);
 router.get("/:id", getSkillDevelopmentById);
-router.post("/", upload.array("images", 2), createSkillDevelopment);
-router.put("/:id", upload.array("images", 2), updateSkillDevelopment);
+router.post(
+  "/",
+  upload.fields([
+    { name: "images", maxCount: 2 },
+    { name: "jobDescriptionFile", maxCount: 1 },
+  ]),
+  createSkillDevelopment
+);
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "images", maxCount: 2 },
+    { name: "jobDescriptionFile", maxCount: 1 },
+  ]),
+  updateSkillDevelopment
+);
 router.delete("/:id", deleteSkillDevelopment);
 
 export default router;

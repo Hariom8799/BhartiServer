@@ -8,6 +8,7 @@ const recentJobSchema = z.object({
   // Accept both relative paths and full URLs
   thumbnail: z.string().min(1, "Thumbnail is required"),
   mainImg: z.string().min(1, "Main image is required"),
+  document : z.string().min(1,"Document required"),
   // Make createdBy optional
   createdBy: z.string().optional(),
 });

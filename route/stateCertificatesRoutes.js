@@ -15,10 +15,20 @@ router.get("/", getAllCertificates);
 router.get("/:id", getCertificateById);
 router.post(
   "/",
-  upload.array("images", 2),
+  upload.fields([
+    { name: "images", maxCount: 2 },
+    { name: "jobDescriptionFile", maxCount: 1 },
+  ]),
   createCertificate
 );
-router.put("/:id", upload.array("images", 2), updateCertificate);
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "images", maxCount: 2 },
+    { name: "jobDescriptionFile", maxCount: 1 },
+  ]),
+  updateCertificate
+);
 router.delete("/:id", deleteCertificate);
 
 export default router;

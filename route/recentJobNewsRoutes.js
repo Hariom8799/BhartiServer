@@ -13,8 +13,19 @@ const upload = multer({ dest: "uploads/" }); // Temp storage for Cloudinary uplo
 
 router.get("/", getRecentJobs);
 router.get("/:id", getRecentJobById);
-router.post("/", upload.array("images", 2), createRecentJob); // max 2 images expected
-router.put("/:id", upload.array("images", 2), updateRecentJob);
+// Accept two images and one document
+router.post(
+  "/",
+  upload.fields([
+    { name: "images", maxCount: 2 },
+    { name: "jobDescriptionFile", maxCount: 1 },
+  ]),
+  createRecentJob
+);
+router.put("/:id", upload.fields([
+  { name: "images", maxCount: 2 },
+  { name: "jobDescriptionFile", maxCount: 1 },
+]), updateRecentJob);
 router.delete("/:id", deleteRecentJob);
 
 export default router;

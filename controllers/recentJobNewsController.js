@@ -1,5 +1,5 @@
 import RecentJobNewsModel from "../models/RecentJobNews.js";
-import { uploadImages } from "../utils/ImageUpload.js";
+import { deleteImage, uploadImages } from "../utils/ImageUpload.js";
 import mongoose from "mongoose";
 import recentJobSchema  from "../validations/index.js";
 
@@ -31,66 +31,97 @@ export const getRecentJobById = async (req, res) => {
 
 export const createRecentJob = async (req, res) => {
   try {
-      const {
-        title,
-        shortDescription,
-        longDescription,
-        status = "inactive",
-        createdBy,
-      } = req.body;
-  
-      let thumbnailUrl;
-      let mainImgUrl;
-  
-      if (req.files && req.files.length > 0) {
-        const urls = await uploadImages(req);
-  
-        if (urls.images.length >= 1) thumbnailUrl = urls.images[0];
-        if (urls.images.length >= 2) mainImgUrl = urls.images[1];
-      }
-  
-      if (!thumbnailUrl || !mainImgUrl) {
-        return res
-          .status(400)
-          .json({ success: false, message: "Images are required" });
-      }
-  
-      const dataToValidate = {
-        title,
-        shortDescription,
-        longDescription,
-        status,
-        thumbnail: thumbnailUrl,
-        mainImg: mainImgUrl,
-      };
-  
-      if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
-        dataToValidate.createdBy = createdBy;
-      }
-  
-      const parsed = recentJobSchema.safeParse(dataToValidate);
-      if (!parsed.success) {
-        return res.status(400).json({
+    const {
+      title,
+      shortDescription,
+      longDescription,
+      status = "inactive",
+      createdBy,
+    } = req.body;
+
+    let thumbnailUrl;
+    let mainImgUrl;
+    let jobDescriptionFile = null;
+
+    // Upload image files (images[] + jobDescriptionFile[])
+    const allFiles = [
+      ...(req.files?.images || []),
+      ...(req.files?.jobDescriptionFile || []),
+    ];
+
+    if (allFiles.length > 0) {
+      const uploaded = await uploadImages({ files: allFiles });
+
+      if (!uploaded.success) {
+        return res.status(500).json({
           success: false,
-          message: "Validation failed",
-          errors: parsed.error.errors,
+          message: "File upload failed",
+          error: uploaded.error,
         });
       }
-  
-      const newJob = await RecentJobNewsModel.create(parsed.data);
-      res
-        .status(201)
-        .json({ success: true, message: "Created successfully", data: newJob });
-    } catch (error) {
-    res
-      .status(500)
-      .json({
+
+      // Map image files
+      const imageFiles = req.files?.images || [];
+      if (imageFiles.length >= 1) thumbnailUrl = uploaded.images[0];
+      if (imageFiles.length >= 2) mainImgUrl = uploaded.images[1];
+
+      // Map document file
+      if (req.files?.jobDescriptionFile?.length) {
+        const docIndex = imageFiles.length; 
+        console.log("hello", docIndex);
+        console.log("jjjjj", uploaded)
+        jobDescriptionFile = uploaded.images[docIndex];
+      }
+    }
+
+    if (!thumbnailUrl || !mainImgUrl) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Images are required" });
+    }
+
+    const dataToValidate = {
+      title,
+      shortDescription,
+      longDescription,
+      status,
+      thumbnail: thumbnailUrl,
+      mainImg: mainImgUrl,
+    };
+
+    if (jobDescriptionFile) {
+      dataToValidate.document = jobDescriptionFile;
+    }
+
+    if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
+      dataToValidate.createdBy = createdBy;
+    }
+
+    const parsed = recentJobSchema.safeParse(dataToValidate);
+    if (!parsed.success) {
+      return res.status(400).json({
         success: false,
-        message: "Creation failed",
-        error: error.message,
+        message: "Validation failed",
+        errors: parsed.error.errors,
       });
+    }
+
+    const newJob = await RecentJobNewsModel.create(parsed.data);
+
+    res.status(201).json({
+      success: true,
+      message: "Created successfully",
+      data: newJob,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Creation failed",
+      error: error.message,
+    });
   }
 };
+
 
 export const updateRecentJob = async (req, res) => {
   try {
@@ -103,15 +134,38 @@ export const updateRecentJob = async (req, res) => {
       createdBy,
       existingThumbnail,
       existingMainImg,
+      existingJobDescriptionFile,
     } = req.body;
 
-    let thumbnailUrl = existingThumbnail;
-    let mainImgUrl = existingMainImg;
+    let thumbnailUrl = existingThumbnail || null;
+    let mainImgUrl = existingMainImg || null;
+    let jobDescriptionFile = existingJobDescriptionFile || null;
 
-    if (req.files && req.files.length > 0) {
-      const urls = await uploadImages(req);
-      if (urls.images.length >= 1) thumbnailUrl = urls.images[0];
-      if (urls.images.length >= 2) mainImgUrl = urls.images[1];
+    // Collect all uploaded files (images[] + jobDescriptionFile[])
+    const allFiles = [
+      ...(req.files?.images || []),
+      ...(req.files?.jobDescriptionFile || []),
+    ];
+
+    if (allFiles.length > 0) {
+      const uploaded = await uploadImages({ files: allFiles });
+
+      if (!uploaded.success) {
+        return res.status(500).json({
+          success: false,
+          message: "File upload failed",
+          error: uploaded.error,
+        });
+      }
+
+      const imageFiles = req.files?.images || [];
+      if (imageFiles.length >= 1) thumbnailUrl = uploaded.images[0];
+      if (imageFiles.length >= 2) mainImgUrl = uploaded.images[1];
+
+      if (req.files?.jobDescriptionFile?.length) {
+        const docIndex = imageFiles.length; // document comes after images
+        jobDescriptionFile = uploaded.images[docIndex];
+      }
     }
 
     const dataToValidate = {};
@@ -122,19 +176,19 @@ export const updateRecentJob = async (req, res) => {
     if (status) dataToValidate.status = status;
     if (thumbnailUrl) dataToValidate.thumbnail = thumbnailUrl;
     if (mainImgUrl) dataToValidate.mainImg = mainImgUrl;
+    if (jobDescriptionFile) dataToValidate.document = jobDescriptionFile;
+
     if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
       dataToValidate.createdBy = createdBy;
     }
 
     const parsed = recentJobSchema.partial().safeParse(dataToValidate);
     if (!parsed.success) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Validation failed",
-          errors: parsed.error.errors,
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: parsed.error.errors,
+      });
     }
 
     const updatedJob = await RecentJobNewsModel.findByIdAndUpdate(
@@ -149,19 +203,20 @@ export const updateRecentJob = async (req, res) => {
     if (!updatedJob)
       return res.status(404).json({ success: false, message: "Not found" });
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Updated successfully",
-        data: updatedJob,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Updated successfully",
+      data: updatedJob,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ success: false, message: "Update failed", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Update failed",
+      error: error.message,
+    });
   }
 };
+
 
 export const deleteRecentJob = async (req, res) => {
   try {
@@ -170,6 +225,14 @@ export const deleteRecentJob = async (req, res) => {
     );
     if (!deletedJob)
       return res.status(404).json({ success: false, message: "Not found" });
+
+    const { mainImg, thumbnail, document } = deletedJob;
+
+    console.log(mainImg, " ", thumbnail, " ", document);
+
+    await deleteImage(mainImg);
+    await deleteImage(thumbnail);
+    await deleteImage(document);
 
     res
       .status(200)

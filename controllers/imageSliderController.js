@@ -1,5 +1,5 @@
 import fs from "fs";
-import { uploadImages } from "../utils/ImageUpload.js";
+import { deleteImage, uploadImages } from "../utils/ImageUpload.js";
 import ImageSlider from "../models/ImageSlider.js";
 // GET all sliders
 export const getSliders = async (req, res) => {
@@ -28,9 +28,6 @@ export const getSliderById = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
-
-// POST create new slider
-
 
 // POST create new slider
 export const createSlider = async (req, res) => {
@@ -124,11 +121,22 @@ export const updateSlider = async (req, res) => {
 export const deleteSlider = async (req, res) => {
   try {
     const deletedSlider = await ImageSlider.findByIdAndDelete(req.params.id);
+    const { mainImg } = deletedSlider;
+    console.log(mainImg);
+    const result = await deleteImage(mainImg);
+    if (!result.success) {
+      res.status(500).json({
+        success: false,
+        message: result.error || "Failed to delete image",
+      });
+    }
+    
     if (!deletedSlider) {
       return res
         .status(404)
         .json({ success: false, message: "Slider not found" });
     }
+    
     res.status(200).json({ success: true, data: deletedSlider });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

@@ -22,6 +22,10 @@ const RecentJobNewsSchema = new Schema(
       type: String, 
       required: true,
     },
+    document : {
+      type: String, 
+      required: true, 
+    },
     status: {
       type: String,
       enum: ["active", "inactive"],
