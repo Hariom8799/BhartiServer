@@ -46,7 +46,7 @@ export const deleteAboutUsImage = async (req, res) => {
 
 export const getAboutUs = async (req, res) => {
   try {
-    const aboutUs = await AboutUs.findOne().lean();
+    const aboutUs = await AboutUs.findOne({ status: "active" }).lean();
     res.status(200).json({ success: true, data: aboutUs || null });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

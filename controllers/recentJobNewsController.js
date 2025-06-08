@@ -5,7 +5,9 @@ import recentJobSchema  from "../validations/index.js";
 
 export const getRecentJobs = async (req, res) => {
   try {
-    const jobs = await RecentJobNewsModel.find().sort({ createdAt: -1 });
+    const jobs = await RecentJobNewsModel.find({ status: "active" }).sort({
+      createdAt: -1,
+    });
     res
       .status(200)
       .json({ success: true, message: "Fetched successfully", data: jobs });

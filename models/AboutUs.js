@@ -7,7 +7,7 @@ const AboutUsSchema = new mongoose.Schema(
     subTitle: { type: String, required: true },
     longDescription: { type: String, required: true },
     images: [String], 
-    status: { type: String, enum: ["active", "inactive"], default: "inactive" },
+    status: { type: String, enum: ["active", "inactive"], default: "active" },
   },
   { timestamps: true }
 );

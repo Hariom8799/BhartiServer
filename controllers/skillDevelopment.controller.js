@@ -6,7 +6,9 @@ import recentJobSchema from "../validations/index.js";
 // Get all skill development entries
 export const getAllSkillDevelopments = async (req, res) => {
   try {
-    const jobs = await SkillDevelopmentModel.find().sort({ createdAt: -1 });
+    const jobs = await SkillDevelopmentModel.find({ status: "active" }).sort({
+      createdAt: -1,
+    });
     res.status(200).json({
       success: true,
       message: "Skill development data fetched successfully",

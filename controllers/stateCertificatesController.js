@@ -6,7 +6,9 @@ import recentJobSchema from "../validations/index.js";
 // Get all certificates
 export const getAllCertificates = async (req, res) => {
   try {
-    const data = await StateGovernmentModel.find().sort({ createdAt: -1 });
+    const data = await StateGovernmentModel.find({ status: "active" }).sort({
+      createdAt: -1,
+    });
     res.status(200).json({
       success: true,
       message: "State certificates fetched successfully",

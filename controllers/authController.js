@@ -21,6 +21,12 @@ export const login = async (req, res) => {
         .json({ success: false, error: "Invalid username or password" });
     }
 
+    if(!user.active){
+      return res
+        .status(401)
+        .json({ success: false, error: "User is Inactive" });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res

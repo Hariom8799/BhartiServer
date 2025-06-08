@@ -4,7 +4,7 @@ import ImageSlider from "../models/ImageSlider.js";
 // GET all sliders
 export const getSliders = async (req, res) => {
   try {
-    const sliders = await ImageSlider.find().sort({ createdAt: -1 });
+    const sliders = await ImageSlider.find({status : "active"}).sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: sliders });
   } catch (error) {
     res.status(500).json({
