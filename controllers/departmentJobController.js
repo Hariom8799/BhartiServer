@@ -23,7 +23,7 @@ export const getDepartmentJobs = async (req, res) => {
 export const getDepartmentJobsPublic = async (req, res) => {
   try {
     const { departmentType, departmentId } = req.query;
-    const filter = {};
+    const filter = {}
 
     if (departmentType) filter.departmentType = departmentType;
     if (departmentId && mongoose.Types.ObjectId.isValid(departmentId)) {
@@ -40,7 +40,13 @@ export const getDepartmentJobsPublic = async (req, res) => {
 
 export const getAllDepartmentJobs = async (req, res) => {
   try {
-    const jobs = await DepartmentJob.find()
+    const { visible } = req.query;
+    const filter = {};
+    if (visible) {
+      filter.visible = visible;
+      filter.lastDateOfSubmission = { $gte: new Date() }
+    }
+    const jobs = await DepartmentJob.find(filter)
       .sort({ createdAt: -1 })
       .populate("createdBy")
       .populate("departmentId");

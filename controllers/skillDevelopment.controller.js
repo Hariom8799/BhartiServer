@@ -47,6 +47,7 @@ export const createSkillDevelopment = async (req, res) => {
       title,
       shortDescription,
       longDescription,
+      contactNo,
       status = "inactive",
       createdBy,
     } = req.body;
@@ -93,6 +94,7 @@ export const createSkillDevelopment = async (req, res) => {
       shortDescription,
       longDescription,
       status,
+      contactNo,
       thumbnail: thumbnailUrl,
       mainImg: mainImgUrl,
     };
@@ -137,6 +139,7 @@ export const updateSkillDevelopment = async (req, res) => {
       longDescription,
       status,
       createdBy,
+      contactNo,
       existingThumbnail,
       existingMainImg,
       existingJobDescriptionFile,
@@ -181,10 +184,10 @@ export const updateSkillDevelopment = async (req, res) => {
     if (thumbnailUrl) dataToValidate.thumbnail = thumbnailUrl;
     if (mainImgUrl) dataToValidate.mainImg = mainImgUrl;
     if (jobDescriptionFile) dataToValidate.document = jobDescriptionFile;
-
-    if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
-      dataToValidate.createdBy = createdBy;
-    }
+    if (contactNo) dataToValidate.contactNo = contactNo;
+      if (createdBy && mongoose.Types.ObjectId.isValid(createdBy)) {
+        dataToValidate.createdBy = createdBy;
+      }
 
     const parsed = recentJobSchema.partial().safeParse(dataToValidate);
     if (!parsed.success) {

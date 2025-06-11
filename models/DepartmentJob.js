@@ -25,6 +25,10 @@ const departmentJobSchema = new mongoose.Schema(
       required: true,
     },
     jobDescriptionFile: { type: String, default: null }, // <-- NEW
+    visible : {
+      type : Boolean,
+      default : false,
+    }
   },
   { timestamps: true }
 );

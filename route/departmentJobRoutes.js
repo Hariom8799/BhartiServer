@@ -26,6 +26,7 @@ router.put(
   upload.single("jobDescriptionFile"),
   updateDepartmentJob
 );
+router.patch("/visibility/:id", updateDepartmentJob);
 router.delete("/:id",requireAuth, deleteDepartmentJob);
 
 export default router;

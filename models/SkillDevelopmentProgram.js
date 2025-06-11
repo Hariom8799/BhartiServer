@@ -6,6 +6,7 @@ const SkillDevelopmentProgramSchema = new Schema(
       type: String,
       required: true,
     },
+    contactNo: { type: Number, required: true },
     shortDescription: {
       type: String,
       required: true,
@@ -22,9 +23,9 @@ const SkillDevelopmentProgramSchema = new Schema(
       type: String,
       required: true,
     },
-    document : {
-      type: String, 
-      required: true, 
+    document: {
+      type: String,
+      required: true,
     },
     status: {
       type: String,
