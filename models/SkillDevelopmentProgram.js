@@ -6,7 +6,7 @@ const SkillDevelopmentProgramSchema = new Schema(
       type: String,
       required: true,
     },
-    contactNo: { type: Number, required: true },
+    contactNo: { type: String, required: true },
     shortDescription: {
       type: String,
       required: true,

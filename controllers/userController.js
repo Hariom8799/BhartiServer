@@ -98,9 +98,9 @@ export const getUserById = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "User not found", success: false });
     }
-
     const { password, ...userWithoutPassword } = user;
-    res.status(200).json({ user: userWithoutPassword, success: true });
+  
+    res.status(200).json({ user: user, success: true });
   } catch (err) {
     res.status(500).json({ error: err.message, success: false });
   }
