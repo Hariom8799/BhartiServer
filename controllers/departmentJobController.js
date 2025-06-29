@@ -44,7 +44,7 @@ export const getAllDepartmentJobs = async (req, res) => {
     const filter = {};
     if (visible) {
       filter.visible = visible;
-      filter.lastDateOfSubmission = { $gte: new Date() }
+      // filter.lastDateOfSubmission = { $gte: new Date() }
     }
     const jobs = await DepartmentJob.find(filter)
       .sort({ createdAt: -1 })
@@ -73,7 +73,6 @@ export const getDepartmentJobById = async (req, res) => {
 // Fixed createDepartmentJob controller
 export const createDepartmentJob = async (req, res) => {
   try {
-
     const {
       nameOfPosition,
       totalVacancies,
@@ -85,6 +84,13 @@ export const createDepartmentJob = async (req, res) => {
       departmentId,
       dateOfJobPosted,
     } = req.body;
+
+    let lastDateEndOfTheDay = null;
+    if (lastDateOfSubmission) {
+      const lastDate = new Date(lastDateOfSubmission);
+      lastDate.setHours(23, 59, 59, 999); // Set to end of the day
+      lastDateEndOfTheDay = lastDate;
+    }
 
     const requiredFields = [
       nameOfPosition,
@@ -107,12 +113,9 @@ export const createDepartmentJob = async (req, res) => {
 
     // Check if file exists and process upload
     if (req.file) {
-
       // Create a files array to match your uploadImages function expectation
       const uploadRequest = { files: [req.file] };
       const uploaded = await uploadImages(uploadRequest);
-
- 
 
       if (!uploaded.success) {
         return res.status(500).json({
@@ -123,7 +126,6 @@ export const createDepartmentJob = async (req, res) => {
       }
 
       jobDescriptionFile = uploaded.images?.[0] || null;
-      
     } else {
       console.log("No file found in request");
     }
@@ -132,7 +134,7 @@ export const createDepartmentJob = async (req, res) => {
       nameOfPosition,
       totalVacancies,
       location,
-      lastDateOfSubmission,
+      lastDateEndOfTheDay,
       postedOn,
       dateOfAdvertisement,
       dateOfJobPosted,
@@ -178,6 +180,12 @@ export const updateDepartmentJob = async (req, res) => {
           }
         }
       }
+    }
+
+    if (updateData.lastDateOfSubmission) {
+      const lastDate = new Date(updateData.lastDateOfSubmission);
+      lastDate.setHours(23, 59, 59, 999);
+      updateData.lastDateOfSubmission = lastDate;
     }
 
     const updated = await DepartmentJob.findByIdAndUpdate(
