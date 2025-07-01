@@ -134,7 +134,7 @@ export const createDepartmentJob = async (req, res) => {
       nameOfPosition,
       totalVacancies,
       location,
-      lastDateEndOfTheDay,
+      lastDateOfSubmission: lastDateEndOfTheDay,
       postedOn,
       dateOfAdvertisement,
       dateOfJobPosted,
