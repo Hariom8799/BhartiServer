@@ -1,6 +1,6 @@
 import express from "express";
 const router = express.Router();
-import { login } from "../controllers/authController.js";
+import { login,adminLogin } from "../controllers/authController.js";
 
 // For CORS preflight requests
 router.options("/login", (req, res) => {
@@ -19,5 +19,6 @@ router.post("/login", (req, res) => {
 
   login(req, res);
 });
+router.post("/admin-login",adminLogin );
 
 export default router;

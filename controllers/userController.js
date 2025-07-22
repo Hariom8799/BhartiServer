@@ -46,7 +46,9 @@ export const createUser = async (req, res) => {
         .json({ error: "All fields are required", success: false });
     }
 
-    const existingUser = await UserModel.findOne({ username });
+    const existingUser = await UserModel.findOne({
+      $or: [{ username }, { email }],
+    });
     if (existingUser) {
       return res
         .status(400)

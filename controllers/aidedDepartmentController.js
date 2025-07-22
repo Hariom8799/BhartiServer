@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import AidedDepartment from "../models/AidedDepartment.js";
-import { IncomingForm } from "formidable";
 import path from "path";
 import fs from "fs";
 import { uploadImages } from "../utils/ImageUpload.js";
@@ -17,7 +16,6 @@ const getFieldValue = (field) => (Array.isArray(field) ? field[0] : field);
 export const createDepartment = async (req, res) => {
   try {
     const { name, language } = req.body;
-
     if (!name || !language) {
       return res
         .status(400)
